@@ -1,7 +1,15 @@
-#include<stdio.h>
+#include <stdio.h>
+#include "lexical_parser.h"
 
 int main(int argc, char const *argv[])
 {
-    printf("Compiler class");
-    return 0;
+    LexicalStream *lexicalStream = createLexicalStream("test.pl0");
+    
+    Token token;
+    do {
+        token = nextToken(lexicalStream);
+        printf("%d - %d - %s\n", token.type, token.number, token.id);
+    } while (token.type != NONE);
+
+    freeLexicalStream(lexicalStream);
 }
