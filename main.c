@@ -10,8 +10,6 @@ int main(int argc, char const *argv[])
     do
     {
         token = nextToken(lexicalStream);
-        tokenToString_static(token, tokenStr, 99);
-        printf("%s\n", tokenStr);
     } while (token.type != NONE);
 
     freeLexicalStream(lexicalStream);

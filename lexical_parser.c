@@ -4,7 +4,50 @@
 #include <stdlib.h>
 #include "lexical_parser.h"
 
+static const char *TOKEN_TYPE_STRING[] = {
+    "NONE",
+    "IDENT",
+    "NUMBER",
+    "BEGIN",
+    "CALL",
+    "CONST",
+    "DO",
+    "ELSE",
+    "END",
+    "FOR",
+    "IF",
+    "ODD",
+    "PROCEDURE",
+    "PROGRAM",
+    "THEN",
+    "TO",
+    "VAR",
+    "WHILE",
+    "PLUS",
+    "MINUS",
+    "TIMES",
+    "SLASH",
+    "EQU",
+    "NEQ",
+    "LSS",
+    "LEQ",
+    "GTR",
+    "GEQ",
+    "LPARENT",
+    "RPARENT",
+    "LBRACK",
+    "RBRACK",
+    "PERIOD",
+    "COMMA",
+    "SEMICOLON",
+    "ASSIGN",
+    "PERCENT",
+    "COMMENT"
+};
 
+static const char *GetTokenType(Token token) {
+    return TOKEN_TYPE_STRING[token.type];
+}
 
 LexicalStream *createLexicalStream(char *filePath)
 {
@@ -61,8 +104,16 @@ Token nextToken(LexicalStream *lexicalStream)
         lexicalStream->lastChar = getc(lexicalStream->source);
         break;
     case '/':
-        token.type = SLASH;
-        lexicalStream->lastChar = getc(lexicalStream->source);
+        if ((c = fgetc(lexicalStream->source)) == '/')
+        {
+            token.type = COMMENT;
+            lexicalStream->lastChar = getc(lexicalStream->source);
+        }
+        else
+        {
+            token.type = SLASH;
+            lexicalStream->lastChar = c;
+        }
         break;
     case '=':
         token.type = EQU;
@@ -80,6 +131,7 @@ Token nextToken(LexicalStream *lexicalStream)
             token.type = NONE;
             break;
         }
+        break;
     case '<':
         if ((c = fgetc(lexicalStream->source)) == '>')
         {
@@ -93,7 +145,7 @@ Token nextToken(LexicalStream *lexicalStream)
         }
         else
         {
-            lexicalStream->lastChar = c;
+            lexicalStream->lastChar = getc(lexicalStream->source);
             token.type = LSS;
         }
         break;
@@ -105,7 +157,7 @@ Token nextToken(LexicalStream *lexicalStream)
         }
         else
         {
-            lexicalStream->lastChar = c;
+            lexicalStream->lastChar = getc(lexicalStream->source);
             token.type = GTR;
         }
         break;
