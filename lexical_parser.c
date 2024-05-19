@@ -2,67 +2,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include "lexical_parser.h"
 
-#define IDENT_MAX_LEN 20
-#define MAX_NUM_LENGTH 6
-#define MAX_STR_LENGTH 20
 
-typedef enum
-{
-    NONE = 0,
-    IDENT,
-    NUMBER,
-    BEGIN,
-    CALL,
-    CONST,
-    DO,
-    ELSE,
-    END,
-    FOR,
-    IF,
-    ODD,
-    PROCEDURE,
-    PROGRAM,
-    THEN,
-    TO,
-    VAR,
-    WHILE,
-    PLUS,
-    MINUS,
-    TIMES,
-    SLASH,
-    EQU,
-    NEQ,
-    LSS,
-    LEQ,
-    GTR,
-    GEQ,
-    LPARENT,
-    RPARENT,
-    LBRACK,
-    RBRACK,
-    PERIOD,
-    COMMA,
-    SEMICOLON,
-    ASSIGN,
-    PERCENT
 
-} TokenType;
-
-typedef struct token
-{
-    TokenType type;
-    int number;
-    char id[IDENT_MAX_LEN + 1];
-} Token;
-
-typedef struct lexical_stream
-{
-    FILE *source;
-    char lastChar;
-} LexicalStream;
-
-LexicalStream *createLexicalStream(char *filePath)
+LexicalStream *createLexicalStream(const char *filePath)
 {
     LexicalStream *out = malloc(sizeof(LexicalStream));
 
@@ -72,9 +16,6 @@ LexicalStream *createLexicalStream(char *filePath)
     return out;
 }
 
-/// @brief free the lexical stream
-/// @param ls lexical stream
-/// @return 0 if success, else return error code of fclose(ls->source)
 int freeLexicalStream(LexicalStream *ls)
 {
     int res = fclose(ls->source);
@@ -132,6 +73,12 @@ Token nextToken(LexicalStream *lexicalStream)
         {
             token.type = ASSIGN;
             lexicalStream->lastChar = getc(lexicalStream->source);
+            break;
+        }
+        else
+        {
+            token.type = NONE;
+            break;
         }
     case '<':
         if ((c = fgetc(lexicalStream->source)) == '>')
@@ -302,4 +249,34 @@ Token nextToken(LexicalStream *lexicalStream)
     }
 
     return token;
+}
+
+char *tokenToString(Token token)
+{
+    int resLength = (MAX_NUM_LENGTH > MAX_STR_LENGTH ? MAX_NUM_LENGTH : MAX_STR_LENGTH) + 10;
+    char *result = malloc(resLength + 1);
+
+    tokenToString_static(token, result, resLength);
+
+    return result;
+}
+
+int tokenToString_static(Token token, char *des, int desLength)
+{
+    int res = 0;
+
+    switch (token.type)
+    {
+    case NUMBER:
+        res = snprintf(des, desLength, "NUMBER(%d)", token.number);
+        break;
+    case IDENT:
+        res = snprintf(des, desLength, "IDENT(%s)", token.id);
+        break;
+    default: // keywords
+        res = snprintf(des, desLength, "%s", TOKEN_TYPE_NAME[token.type]);
+        break;
+    }
+
+    return res;
 }
